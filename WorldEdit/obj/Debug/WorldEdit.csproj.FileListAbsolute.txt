@@ -1,0 +1,5 @@
+C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\obj\Debug\WorldEdit.csprojResolveAssemblyReference.cache
+C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\bin\WorldEdit.dll
+C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\bin\WorldEdit.pdb
+C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\obj\Debug\WorldEdit.dll
+C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\obj\Debug\WorldEdit.pdb
