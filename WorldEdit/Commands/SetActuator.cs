@@ -9,7 +9,6 @@ namespace WorldEdit.Commands
 	{
 		private Expression expression;
 		private bool state;
-		private int actuator;
 
 		public SetActuator(int x, int y, int x2, int y2, TSPlayer plr, bool state, Expression expression)
 			: base(x, y, x2, y2, plr)
