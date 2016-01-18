@@ -84,7 +84,6 @@ namespace WorldEdit.Commands
                     }
 				}
 			}
-
 			plr.SendSuccessMessage("Flipped clipboard.");
 		}
 	}
