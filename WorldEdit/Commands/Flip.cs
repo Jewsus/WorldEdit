@@ -44,8 +44,44 @@ namespace WorldEdit.Commands
 
 				for (int i = flipX ? width - 1 : 0; i != endX; i += incX)
 				{
-					for (int j = flipY ? height - 1 : 0; j != endY; j += incY)
-						writer.Write(tiles[i, j]);
+                    for (int j = flipY ? height - 1 : 0; j != endY; j += incY)
+                    {
+                        if (flipX && tiles[i, j].slope() == 1)
+                        {
+                            tiles[i, j].slope(2);
+                        }
+                        else if (flipX && tiles[i, j].slope() == 2)
+                        {
+                            tiles[i, j].slope(1);
+                        }
+                        else if (flipX && tiles[i, j].slope() == 3)
+                        {
+                            tiles[i, j].slope(4);
+                        }
+                        else if (flipX && tiles[i, j].slope() == 4)
+                        {
+                            tiles[i, j].slope(3);
+                        }
+
+                        if (flipY && tiles[i, j].slope() == 1)
+                        {
+                            tiles[i, j].slope(3);
+                        }
+                        else if (flipY && tiles[i, j].slope() == 3)
+                        {
+                            tiles[i, j].slope(1);
+                        }
+                        else if (flipY && tiles[i, j].slope() == 2)
+                        {
+                            tiles[i, j].slope(4);
+                        }
+                        else if (flipY && tiles[i, j].slope() == 4)
+                        {
+                            tiles[i, j].slope(2);
+                        }
+
+                        writer.Write(tiles[i, j]);
+                    }
 				}
 			}
 
