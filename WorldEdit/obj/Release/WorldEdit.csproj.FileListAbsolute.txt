@@ -2,4 +2,3 @@ C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\bin\WorldEdit.dll
 C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\bin\WorldEdit.pdb
 C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\obj\Release\WorldEdit.dll
 C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\obj\Release\WorldEdit.pdb
-C:\Users\Marcus101RR\Desktop\TShock\WorldEdit\WorldEdit\obj\Release\WorldEdit.csprojResolveAssemblyReference.cache
