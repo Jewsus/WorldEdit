@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Terraria;
 using TShockAPI;
 using WorldEdit.Expressions;
@@ -37,23 +38,23 @@ namespace WorldEdit.Commands
                     ignore = alignment;
                     alignment = 0;
                 }
-                
-				if ((alignment & 1) == 0)
-					x2 = x + width;
-				else
-				{
-					x2 = x;
-					x -= width;
-				}
-				if ((alignment & 2) == 0)
-					y2 = y + height;
-				else
-				{
-					y2 = y;
-					y -= height;
-				}
-				
-				Tools.PrepareUndo(x, y, x2, y2, plr);
+
+                if ((alignment & 1) == 0)
+                    x2 = x + width;
+                else
+                {
+                    x2 = x;
+                    x -= width;
+                }
+                if ((alignment & 2) == 0)
+                    y2 = y + height;
+                else
+                {
+                    y2 = y;
+                    y -= height;
+                }
+
+                Tools.PrepareUndo(x, y, x2, y2, plr);
                 for (int i = x; i <= x2; i++)
                 {
                     for (int j = y; j <= y2; j++)
@@ -61,15 +62,14 @@ namespace WorldEdit.Commands
                         Tile tile = reader.ReadTile();
                         if (i >= 0 && j >= 0 && i < Main.maxTilesX && j < Main.maxTilesY && (expression == null || expression.Evaluate(Main.tile[i, j])))
                         {
-                            Region region = TShock.Regions.GetRegionByName("Housing");
-                            if (region != null)
+                            if (TShock.Regions.InAreaRegion(i, j).Any(r => r != null && r.Z > 99) && ignore != 9)
                             {
-                                if (region.InArea(i, j) && ignore != 9)
-                                    continue;
-                                Main.tile[i, j] = tile; // Paste Tiles
+                                continue;
                             }
                             else
-                                Main.tile[i, j] = tile;
+                            {
+                                Main.tile[i, j] = tile; // Paste Tiles
+                            }
                         }
                     }
                 }
