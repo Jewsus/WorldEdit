@@ -95,28 +95,28 @@ namespace WorldEdit
 		}
 		public static void LoadWorldSection(string path)
 		{
-			// GZipStream is already buffered, but it's much faster to have a 1 MB buffer.
-			using (var reader =
-				new BinaryReader(
-					new BufferedStream(
-						new GZipStream(File.Open(path, FileMode.Open), CompressionMode.Decompress), BUFFER_SIZE)))
-			{
-				int x = reader.ReadInt32();
-				int y = reader.ReadInt32();
-				int width = reader.ReadInt32();
-				int height = reader.ReadInt32();
+            // GZipStream is already buffered, but it's much faster to have a 1 MB buffer.
+            using (var reader =
+                new BinaryReader(
+                    new BufferedStream(
+                        new GZipStream(File.Open(path, FileMode.Open), CompressionMode.Decompress), BUFFER_SIZE)))
+            {
+                int x = reader.ReadInt32();
+                int y = reader.ReadInt32();
+                int width = reader.ReadInt32();
+                int height = reader.ReadInt32();
 
-				for (int i = x; i < x + width; i++)
-				{
-					for (int j = y; j < y + height; j++)
-					{
-						Main.tile[i, j] = reader.ReadTile();
-						Main.tile[i, j].skipLiquid(true);
-					}
-				}
-				ResetSection(x, y, x + width, y + height);
-			}
-		}
+                for (int i = x; i < x + width; i++)
+                {
+                    for (int j = y; j < y + height; j++)
+                    {
+                        Main.tile[i, j] = reader.ReadTile();
+                        Main.tile[i, j].skipLiquid(true);
+                    }
+                    ResetSection(x, y, x + width, y + height);
+                }
+            }
+        }
 		public static void PrepareUndo(int x, int y, int x2, int y2, TSPlayer plr)
 		{
 			if (WorldEdit.Database.GetSqlType() == SqlType.Mysql)
@@ -161,7 +161,72 @@ namespace WorldEdit
 			tile.liquid = reader.ReadByte();
 			return tile;
 		}
-		public static bool Redo(string accountName)
+
+        public static void ReadChests(this BinaryReader reader, int x, int y)
+        {
+            int num = (int)reader.ReadInt32();
+            int num2 = (int)reader.ReadInt16();
+            TSPlayer.All.SendInfoMessage("Total Chests: {0}, Total Slots: {1}", num, num2);
+            int num3;
+            int num4;
+            if (num2 < 40)
+            {
+                num3 = num2;
+                num4 = 0;
+            }
+            else
+            {
+                num3 = 40;
+                num4 = num2 - 40;
+            }
+            int i;
+            for (i = 0; i < num; i++)
+            {
+                for (int c = 0; c < 1000; c++)
+                {
+                    if (Main.chest[c] == null)
+                    {
+                        Chest chest = new Chest(false);
+                        chest.x = reader.ReadInt32() + x;
+                        chest.y = reader.ReadInt32() + y;
+                        chest.name = reader.ReadString();
+                        TSPlayer.All.SendInfoMessage("Load: {0}x{1} Offset: {2}x{3}", chest.x, chest.y, chest.x - x, chest.y - y);
+                        for (int j = 0; j < num3; j++)
+                        {
+                            short num5 = reader.ReadInt16();
+                            Item item = new Item();
+                            if (num5 > 0)
+                            {
+                                item.netDefaults(reader.ReadInt16());
+                                item.stack = (int)num5;
+                                item.Prefix((int)reader.ReadByte());
+                            }
+                            else if (num5 < 0)
+                            {
+                                item.netDefaults(reader.ReadInt16());
+                                item.Prefix((int)reader.ReadByte());
+                                item.stack = 1;
+                            }
+                            chest.item[j] = item;
+                        }
+                        for (int j = 0; j < num4; j++)
+                        {
+                            short num5 = reader.ReadInt16();
+                            if (num5 > 0)
+                            {
+                                reader.ReadInt16();
+                                reader.ReadByte();
+                            }
+                        }
+                        Main.chest[i] = chest;
+                        break;
+                    }
+                }
+            }
+            TSPlayer.All.SendInfoMessage("{0} Chests Loaded.", num);
+        }
+
+        public static bool Redo(string accountName)
 		{
 			int redoLevel = 0;
 			int undoLevel = 0;
@@ -215,26 +280,29 @@ namespace WorldEdit
 				}
 			}
 		}
-		public static void SaveWorldSection(int x, int y, int x2, int y2, string path)
-		{
-			// GZipStream is already buffered, but it's much faster to have a 1 MB buffer.
-			using (var writer =
-				new BinaryWriter(
-					new BufferedStream(
-						new GZipStream(File.Open(path, FileMode.Create), CompressionMode.Compress), BUFFER_SIZE)))
-			{
-				writer.Write(x);
-				writer.Write(y);
-				writer.Write(x2 - x + 1);
-				writer.Write(y2 - y + 1);
+        public static void SaveWorldSection(int x, int y, int x2, int y2, string path)
+        {
+            // GZipStream is already buffered, but it's much faster to have a 1 MB buffer.
+            using (var writer =
+                new BinaryWriter(
+                    new BufferedStream(
+                        new GZipStream(File.Open(path, FileMode.Create), CompressionMode.Compress), BUFFER_SIZE)))
+            {
+                writer.Write(x);
+                writer.Write(y);
+                writer.Write(x2 - x + 1);
+                writer.Write(y2 - y + 1);
 
-				for (int i = x; i <= x2; i++)
-				{
-					for (int j = y; j <= y2; j++)
-						writer.Write(Main.tile[i, j] ?? new Tile());
-				}
-			}
-		}
+                for (int i = x; i <= x2; i++)
+                {
+                    for (int j = y; j <= y2; j++)
+                    {
+                        writer.Write(Main.tile[i, j] ?? new Tile());
+                    }
+                }
+            }
+        }
+
 		public static void Write(this BinaryWriter writer, Tile tile)
 		{
 			writer.Write(tile.sTileHeader);
@@ -249,11 +317,70 @@ namespace WorldEdit
 					writer.Write(tile.frameX);
 					writer.Write(tile.frameY);
 				}
-			}
+            }
 			writer.Write(tile.wall);
 			writer.Write(tile.liquid);
 		}
-		public static bool Undo(string accountName)
+
+        public static void WriteChests(this BinaryWriter writer, int x, int y, int x2, int y2)
+        {
+            int amount = 0;
+            for (int i = 0; i < 1000; i++)
+            {
+                Chest chest = Main.chest[i];
+                if (chest != null)
+                {
+                    if (new Rectangle(x, y, x2 - x + 1, y2 - y + 1).Contains(chest.x, chest.y))
+                    {
+                        amount++;
+                    }
+                }
+            }
+            writer.Write(amount);
+            writer.Write((short)40);
+            for (int i = 0; i < 1000; i++)
+            {
+                Chest chest = Main.chest[i];
+                if (chest != null)
+                {
+                    if (new Rectangle(x, y, x2 - x + 1, y2 - y + 1).Contains(chest.x, chest.y))
+                    {
+                        writer.Write(chest.x - x);
+                        writer.Write(chest.y - y);
+                        writer.Write(chest.name);
+                        TSPlayer.All.SendInfoMessage("Save: {0}x{1} Offset: {2}x{3}", chest.x, chest.y, chest.x - x, chest.y - y);
+                        for (int l = 0; l < 40; l++)
+                        {
+                            Item item = chest.item[l];
+                            if (item == null)
+                            {
+                                writer.Write(0);
+                            }
+                            else
+                            {
+                                if (item.stack > item.maxStack)
+                                {
+                                    item.stack = item.maxStack;
+                                }
+                                if (item.stack < 0)
+                                {
+                                    item.stack = 1;
+                                }
+                                writer.Write((short)item.stack);
+                                if (item.stack > 0)
+                                {
+                                    writer.Write(item.netID);
+                                    writer.Write(item.prefix);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            TSPlayer.All.SendInfoMessage("{0} Chests Saved.", amount);
+        }
+
+        public static bool Undo(string accountName)
 		{
 			int redoLevel = 0;
 			int undoLevel = 0;
