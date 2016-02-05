@@ -239,7 +239,11 @@ namespace WorldEdit
 			{
 				HelpText = "Shifts the worldedit selection in a direction."
 			});
-			TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.history.undo", Undo, "/undo")
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.selection.size", Size, "/size")
+            {
+                HelpText = "Shows the size of the clipboard."
+            });
+            TShockAPI.Commands.ChatCommands.Add(new Command("worldedit.history.undo", Undo, "/undo")
 			{
 				HelpText = "Undoes a number of worldedit actions."
 			});
@@ -1146,7 +1150,39 @@ namespace WorldEdit
 			}
 			e.Player.SendSuccessMessage("Shifted selection.");
 		}
-		void Undo(CommandArgs e)
+
+        void Size(CommandArgs e)
+        {
+            if (e.Parameters.Count != 1)
+            {
+                e.Player.SendErrorMessage("Invalid syntax! Proper syntax: //size <select/clip>");
+                return;
+            }
+            bool selection = false;
+            PlayerInfo info = e.Player.GetPlayerInfo();
+            
+            if (e.Parameters[0] == "select")
+            {
+                if (info.X == -1 || info.Y == -1 || info.X2 == -1 || info.Y2 == -1)
+                {
+                    e.Player.SendErrorMessage("Invalid selection.");
+                    return;
+                }
+                selection = true;
+            }
+            if (e.Parameters[0] == "clip")
+            {
+                if (!Tools.HasClipboard(e.Player.User.Name))
+                {
+                    e.Player.SendErrorMessage("Invalid clipboard.");
+                    return;
+                }
+                selection = false;
+            }
+            CommandQueue.Add(new Size(info.X, info.Y, info.X2, info.Y2, e.Player, selection));
+        }
+
+        void Undo(CommandArgs e)
 		{
 			if (e.Parameters.Count > 2)
 			{
