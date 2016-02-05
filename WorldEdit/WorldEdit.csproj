@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Biome.cs" />
+    <Compile Include="Commands\Size.cs" />
     <Compile Include="Commands\Cut.cs" />
     <Compile Include="Commands\FixHalves.cs" />
     <Compile Include="Commands\FixSlopes.cs" />
